@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Арктический ГАТУ — Калькулятор ЕГЭ 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Стили полностью совпадают с предыдущей версией — они здесь, но для экономии места я их не дублирую. 
+           Вы можете скопировать их из предыдущего ответа или из этого файла. */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f9fbf9;
+            color: #1e2f2b;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { max-width: 560px; width: 100%; margin: 0 auto; }
+        .header { background: white; border-radius: 32px; padding: 20px 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 24px; display: flex; align-items: center; gap: 16px; border: 1px solid #e0ede6; }
+        .logo-icon { background: #2c6e3c; width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; color: white; flex-shrink: 0; }
+        .logo-text h1 { font-size: 1.4rem; font-weight: 700; color: #2c6e3c; line-height: 1.2; }
+        .logo-text p { font-size: 0.75rem; color: #4a6b58; font-weight: 500; }
+        .calc-card { background: white; border-radius: 32px; padding: 24px 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); border: 1px solid #e0ede6; }
+        .calc-title { font-size: 1.5rem; font-weight: 700; color: #1e4233; margin-bottom: 6px; }
+        .calc-sub { color: #3a6b53; font-size: 0.9rem; margin-bottom: 20px; }
+        .user-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .user-form label { font-weight: 600; font-size: 0.85rem; color: #2c6e3c; margin-bottom: 2px; }
+        .user-form input { padding: 12px 16px; border-radius: 40px; border: 1px solid #cfe3d6; font-size: 1rem; width: 100%; background: #f9fbf9; transition: border-color 0.2s; }
+        .user-form input:focus { outline: none; border-color: #2c6e3c; background: white; }
+        .toggle-container { display: flex; gap: 10px; margin: 16px 0 12px; justify-content: center; }
+        .toggle-btn { padding: 8px 20px; border-radius: 40px; border: 2px solid #cfe3d6; background: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; flex: 1; text-align: center; }
+        .toggle-btn.active { border-color: #2c6e3c; background: #2c6e3c; color: white; }
+        .toggle-btn:hover:not(.active) { background: #eef5f1; }
+        .spo-field { display: none; margin: 12px 0 16px; }
+        .spo-field label { font-weight: 600; font-size: 0.85rem; color: #2c6e3c; }
+        .spo-field input { width: 100%; padding: 12px 16px; border-radius: 40px; border: 1px solid #cfe3d6; font-size: 1rem; margin-top: 4px; }
+        .ege-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+        .ege-field { background: #f9fbf9; border-radius: 20px; padding: 8px 12px; border: 1px solid #eef5f1; }
+        .ege-field label { display: block; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; color: #2c6e3c; letter-spacing: 0.3px; margin-bottom: 2px; }
+        .ege-field input { width: 100%; padding: 6px 0 6px 4px; border: none; background: transparent; font-size: 1.1rem; font-weight: 600; color: #1a2c24; outline: none; }
+        .ege-field input::-webkit-outer-spin-button,
+        .ege-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .ege-field input[type="number"] { -moz-appearance: textfield; }
+        .btn-primary { background: #2c6e3c; color: white; border: none; padding: 14px 0; border-radius: 40px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 8px; }
+        .btn-primary:hover { background: #1f552d; transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+        .min-scores-info {
+            background: #eef5f1;
+            border-radius: 20px;
+            padding: 10px 16px;
+            font-size: 0.7rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            justify-content: center;
+            margin: 12px 0 4px;
+            color: #1e4233;
+        }
+        .min-scores-info span { white-space: nowrap; }
+        .result-area { margin-top: 20px; display: none; }
+        .result-area.show { display: block; }
+        .result-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        .result-item { background: #f9fbf9; padding: 14px 16px; border-radius: 20px; border-left: 4px solid #2c6e3c; cursor: pointer; transition: 0.2s; }
+        .result-item:hover { background: #eef5f1; border-left-color: #1f552d; }
+        .result-item.selected { border-left-color: #ff9800; background: #fff3e0; }
+        .result-item .name { font-weight: 600; font-size: 0.95rem; }
+        .result-item .detail { font-size: 0.75rem; color: #4a6b58; margin-top: 4px; }
+        .result-item .places-info { font-size: 0.7rem; color: #2c6e3c; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .result-item .places-info span { background: #eef5f1; padding: 2px 8px; border-radius: 12px; }
+        .no-results { padding: 20px; text-align: center; color: #7a8f85; background: #f9fbf9; border-radius: 20px; }
+        .status-msg { font-size: 0.85rem; color: #2c6e3c; text-align: center; margin-top: 12px; display: none; }
+        .status-msg.show { display: block; }
+        .robot-container { display: none; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 24px; padding: 20px; margin: 16px 0; border: 2px solid #2c6e3c; animation: fadeIn 0.6s ease; }
+        .robot-container.show { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .robot-header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+        .robot-avatar { font-size: 3rem; line-height: 1; }
+        .robot-title { font-weight: 700; font-size: 1.1rem; color: #1e4233; }
+        .robot-message { font-size: 0.95rem; color: #1a2c24; line-height: 1.5; }
+        .robot-message strong { color: #2c6e3c; }
+        .robot-link { display: inline-block; margin-top: 10px; color: #2c6e3c; font-weight: 600; text-decoration: none; border-bottom: 2px solid #2c6e3c; padding-bottom: 2px; }
+        .robot-link:hover { color: #1f552d; }
+        .spec-detail-container { display: none; background: #f9fbf9; border-radius: 20px; padding: 16px; margin-top: 16px; border-left: 4px solid #2c6e3c; animation: fadeIn 0.3s ease; }
+        .spec-detail-container.show { display: block; }
+        .spec-detail-container .spec-name { font-weight: 700; font-size: 1.1rem; color: #1e4233; }
+        .spec-detail-container .spec-desc { margin-top: 8px; font-size: 0.9rem; line-height: 1.5; color: #2a4236; }
+        .spec-detail-container .spec-places { margin-top: 8px; font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 12px; background: white; padding: 10px 14px; border-radius: 16px; }
+        .spec-detail-container .spec-places span { font-weight: 500; }
+        .consent-area { margin: 20px 0 12px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.75rem; color: #4a6b58; line-height: 1.4; }
+        .consent-area input[type="checkbox"] { margin-top: 2px; width: 18px; height: 18px; flex-shrink: 0; accent-color: #2c6e3c; }
+        .consent-area a { color: #2c6e3c; text-decoration: underline; }
+        footer { margin-top: 30px; font-size: 0.7rem; color: #7a8f85; text-align: center; border-top: 1px solid #e0ede6; padding-top: 16px; width: 100%; }
+        @media (max-width: 500px) { .ege-grid { grid-template-columns: 1fr 1fr; gap: 8px; } .calc-card { padding: 16px; } .header { padding: 14px 16px; } .logo-icon { width: 48px; height: 48px; font-size: 20px; } .logo-text h1 { font-size: 1.2rem; } .robot-avatar { font-size: 2.5rem; } }
+        @media (max-width: 380px) { .ege-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="logo-icon">А</div>
+        <div class="logo-text">
+            <h1>Арктический ГАТУ</h1>
+            <p>Калькулятор ЕГЭ • 2026</p>
+        </div>
+    </div>
+
+    <div class="calc-card">
+        <div class="calc-title">📊 Калькулятор ЕГЭ</div>
+        <div class="calc-sub">Введите баллы, и мы подберём подходящие направления бакалавриата</div>
+
+        <div class="user-form">
+            <div>
+                <label for="userName">👤 Ваше ФИО</label>
+                <input type="text" id="userName" placeholder="Иванов Иван Иванович" required>
+            </div>
+            <div>
+                <label for="userPhone">📞 Контактный телефон</label>
+                <input type="tel" id="userPhone" placeholder="+7 (999) 123-45-67" required>
+            </div>
+        </div>
+
+        <div class="toggle-container">
+            <button class="toggle-btn active" id="egeToggle" onclick="setEntryType('ege')">📝 По ЕГЭ</button>
+            <button class="toggle-btn" id="spoToggle" onclick="setEntryType('spo')">🎓 По диплому СПО</button>
+        </div>
+
+        <div class="spo-field" id="spoField">
+            <label>📘 Укажите специальность по диплому СПО</label>
+            <input type="text" id="spoSpecialty" placeholder="Например: Технология продукции общественного питания">
+        </div>
+
+        <div class="min-scores-info" id="minScoresInfo">
+            <span>Русский 36</span>
+            <span>Математика 27</span>
+            <span>Биология 36</span>
+            <span>Физика 36</span>
+            <span>Химия 36</span>
+            <span>Информатика 40</span>
+            <span>Обществознание 42</span>
+            <span>История 32</span>
+            <span>Иностранный 22</span>
+            <span>География 37</span>
+        </div>
+
+        <div class="ege-grid" id="egeGrid">
+            <div class="ege-field"><label>📖 Русский</label><input type="number" id="rusScore" value="70" min="0" max="100"></div>
+            <div class="ege-field"><label>📐 Математика</label><input type="number" id="mathScore" value="60" min="0" max="100"></div>
+            <div class="ege-field"><label>🧬 Биология</label><input type="number" id="bioScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>⚡ Физика</label><input type="number" id="physScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>🧪 Химия</label><input type="number" id="chemScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>💻 Информатика</label><input type="number" id="infScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>🏛️ Обществознание</label><input type="number" id="socScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>🌍 География</label><input type="number" id="geoScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>📜 История</label><input type="number" id="histScore" value="0" min="0" max="100"></div>
+            <div class="ege-field"><label>🌐 Иностранный</label><input type="number" id="foreignScore" value="0" min="0" max="100"></div>
+        </div>
+
+        <div class="consent-area">
+            <input type="checkbox" id="consentCheck">
+            <label for="consentCheck">
+                Я даю своё согласие на обработку персональных данных (ФИО, телефон) в соответствии с <a href="#" target="_blank">политикой конфиденциальности</a> и <a href="#" target="_blank">Федеральным законом № 152-ФЗ</a>.
+                <br><small style="display:block; margin-top:4px;">Данные используются только для подбора специальностей и сохраняются в системе.</small>
+            </label>
+        </div>
+
+        <button class="btn-primary" id="calcBtn" disabled>🔍 Подобрать специальности</button>
+
+        <div class="status-msg" id="statusMsg">✅ Результаты сохранены в системе</div>
+
+        <div class="robot-container" id="robotContainer">
+            <div class="robot-header">
+                <div class="robot-avatar">🤖</div>
+                <div class="robot-title" id="robotTitle">Ваше призвание</div>
+            </div>
+            <div class="robot-message" id="robotMessage"></div>
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-list" id="resultList"></div>
+            <div class="spec-detail-container" id="specDetailContainer">
+                <div class="spec-name" id="specDetailName"></div>
+                <div class="spec-desc" id="specDetailDesc"></div>
+                <div class="spec-places" id="specDetailPlaces"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Арктический ГАТУ — приём 2026 · Данные с agatu.ru
+    </footer>
+</div>
+
+<script>
+    // ------------------------------------------------------------
+    //  БАЗА ПРОГРАММ (только бакалавриат, по буклету)
+    // ------------------------------------------------------------
+    const programs = [
+        {
+            id: 1,
+            name: "06.03.01 Биология (Охотоведение)",
+            profile: "Охотоведение",
+            form: "Очная",
+            budget: 15,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Биология, *Математика / Информатика / Физика / Химия",
+            examKeys: ["rus", "bio"],
+            elective: ["Математика", "Информатика", "Физика", "Химия"],
+            electiveKeys: ["math", "inf", "phys", "chem"],
+            profession: "биолог",
+            description: "Биологи-охотоведы занимаются изучением и охраной диких животных, управлением охотничьими хозяйствами, мониторингом популяций. Работают в заповедниках, охотничьих угодьях, научных институтах."
+        },
+        {
+            id: 2,
+            name: "09.03.02 Информационные системы и технологии",
+            profile: "Управление аграрными проектами в области ИТ",
+            form: "Очная",
+            budget: 0,
+            paid: 15,
+            target: 0,
+            exams: "Русский язык, Математика, *Информатика / Физика",
+            examKeys: ["rus", "math"],
+            elective: ["Информатика", "Физика"],
+            electiveKeys: ["inf", "phys"],
+            profession: "инженер",
+            description: "ИТ-инженеры в АПК разрабатывают и внедряют цифровые решения для сельского хозяйства: системы управления фермами, дроны, умные теплицы, автоматизацию процессов."
+        },
+        {
+            id: 3,
+            name: "19.03.04 Технология продукции и организация общественного питания",
+            profile: "Технология продукции и организация общественного питания",
+            form: "Заочная",
+            budget: 15,
+            paid: 5,
+            target: 0,
+            exams: "Русский язык, Биология, *Химия / Математика / Физика",
+            examKeys: ["rus", "bio"],
+            elective: ["Химия", "Математика", "Физика"],
+            electiveKeys: ["chem", "math", "phys"],
+            profession: "технолог",
+            description: "Технологи общественного питания разрабатывают рецептуры, контролируют качество продуктов, управляют производственными процессами на пищевых предприятиях. Работают в ресторанах, кафе, столовых, на пищевых производствах."
+        },
+        {
+            id: 4,
+            name: "21.03.02 Землеустройство и кадастры",
+            profile: "Управление земельными ресурсами",
+            form: "Заочная",
+            budget: 23,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Математика, *Физика / География / Химия / Информатика",
+            examKeys: ["rus", "math"],
+            elective: ["Физика", "География", "Химия", "Информатика"],
+            electiveKeys: ["phys", "geo", "chem", "inf"],
+            profession: "экономист",
+            description: "Землеустроители занимаются планированием использования земель, ведением кадастров, оценкой и управлением земельными ресурсами. Работают в органах власти, риэлторских компаниях, проектных институтах."
+        },
+        {
+            id: 5,
+            name: "35.03.01 Лесное дело",
+            profile: "Охрана лесов от пожаров",
+            form: "Очная / Заочная",
+            budget: 43,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Математика, *Биология / Физика / Химия / География / Информатика",
+            examKeys: ["rus", "math"],
+            elective: ["Биология", "Физика", "Химия", "География", "Информатика"],
+            electiveKeys: ["bio", "phys", "chem", "geo", "inf"],
+            profession: "эколог",
+            description: "Специалисты лесного дела занимаются охраной, восстановлением и рациональным использованием лесных ресурсов, борьбой с лесными пожарами. Работают в лесничествах, заповедниках, МЧС."
+        },
+        {
+            id: 6,
+            name: "35.03.02 Технология лесозаготовительных и деревоперерабатывающих производств",
+            profile: "Лесоинженерное дело",
+            form: "Очная",
+            budget: 15,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Математика, *Биология / Физика / Химия / География / Информатика",
+            examKeys: ["rus", "math"],
+            elective: ["Биология", "Физика", "Химия", "География", "Информатика"],
+            electiveKeys: ["bio", "phys", "chem", "geo", "inf"],
+            profession: "инженер",
+            description: "Инженеры лесозаготовительных производств организуют процессы заготовки, транспортировки и первичной переработки древесины. Работают на лесопромышленных предприятиях, в лесхозах."
+        },
+        {
+            id: 7,
+            name: "35.03.04 Агрономия",
+            profile: "Агробизнес",
+            form: "Очная",
+            budget: 18,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Биология, *Химия / Математика / Физика / География / Информатика",
+            examKeys: ["rus", "bio"],
+            elective: ["Химия", "Математика", "Физика", "География", "Информатика"],
+            electiveKeys: ["chem", "math", "phys", "geo", "inf"],
+            profession: "агроном",
+            description: "Агрономы разрабатывают технологии возделывания сельскохозяйственных культур, занимаются селекцией, защитой растений, управлением агробизнесом. Работают в сельхозпредприятиях, фермерских хозяйствах."
+        },
+        {
+            id: 8,
+            name: "35.03.06 Агроинженерия",
+            profile: "Электрооборудование и электротехнологии / Технический сервис",
+            form: "Очная / Заочная",
+            budget: 98,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Математика, *Биология / Физика / Химия / География / Информатика",
+            examKeys: ["rus", "math"],
+            elective: ["Биология", "Физика", "Химия", "География", "Информатика"],
+            electiveKeys: ["bio", "phys", "chem", "geo", "inf"],
+            profession: "инженер",
+            description: "Агроинженеры занимаются техническим обслуживанием и ремонтом сельскохозяйственной техники, проектированием электрооборудования, внедрением новых технологий в АПК. Работают в сервисных центрах, на предприятиях."
+        },
+        {
+            id: 9,
+            name: "35.03.07 Технология производства и переработки сельскохозяйственной продукции",
+            profile: "Технология производства и переработки продукции животноводства",
+            form: "Очная / Заочная",
+            budget: 35,
+            paid: 0,
+            target: 15,
+            exams: "Русский язык, Биология, *Математика / Физика / Химия / География / Информатика",
+            examKeys: ["rus", "bio"],
+            elective: ["Математика", "Физика", "Химия", "География", "Информатика"],
+            electiveKeys: ["math", "phys", "chem", "geo", "inf"],
+            profession: "технолог",
+            description: "Технологи переработки сельхозпродукции разрабатывают и внедряют процессы переработки сырья в готовые продукты питания, контролируют качество. Работают на мясокомбинатах, молочных заводах, пищевых производствах."
+        },
+        {
+            id: 10,
+            name: "35.03.10 Ландшафтная архитектура",
+            profile: "Садово-парковое и ландшафтное строительство",
+            form: "Очная",
+            budget: 21,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Математика, *Биология / Физика / Химия / География / Информатика",
+            examKeys: ["rus", "math"],
+            elective: ["Биология", "Физика", "Химия", "География", "Информатика"],
+            electiveKeys: ["bio", "phys", "chem", "geo", "inf"],
+            profession: "архитектор",
+            description: "Ландшафтные архитекторы проектируют парки, скверы, сады, городские общественные пространства и частные территории. Работают в архитектурных бюро, студиях ландшафтного дизайна, муниципальных органах."
+        },
+        {
+            id: 11,
+            name: "36.03.01 Ветеринарно-санитарная экспертиза",
+            profile: "Ветеринарно-санитарный эксперт",
+            form: "Очная / Заочная",
+            budget: 30,
+            paid: 0,
+            target: 0,
+            exams: "Русский язык, Биология, *Химия / Математика",
+            examKeys: ["rus", "bio"],
+            elective: ["Химия", "Математика"],
+            electiveKeys: ["chem", "math"],
+            profession: "ветеринар",
+            description: "Ветеринарно-санитарные эксперты проводят контроль качества продуктов животного происхождения, санитарную оценку сырья и готовой продукции. Работают в ветеринарных лабораториях, на перерабатывающих предприятиях, в контролирующих органах."
+        },
+        {
+            id: 12,
+            name: "36.03.02 Зоотехния",
+            profile: "Экономика, управление и организация зооинжиниринга",
+            form: "Очная / Заочная",
+            budget: 50,
+            paid: 0,
+            target: 16,
+            exams: "Русский язык, Биология, *Химия / Математика",
+            examKeys: ["rus", "bio"],
+            elective: ["Химия", "Математика"],
+            electiveKeys: ["chem", "math"],
+            profession: "зоотехник",
+            description: "Зоотехники занимаются разведением, селекцией и кормлением сельскохозяйственных животных, улучшением их продуктивных качеств, управлением животноводческими комплексами. Работают в хозяйствах, племенных заводах."
+        },
+        {
+            id: 13,
+            name: "38.03.01 Экономика",
+            profile: "Экономика и бизнес-планирование в АПК",
+            form: "Очно-заочная",
+            budget: 0,
+            paid: 14,
+            target: 0,
+            exams: "Русский язык, Математика, *Информатика / История / Обществознание / Иностранный язык / География",
+            examKeys: ["rus", "math"],
+            elective: ["Информатика", "История", "Обществознание", "Иностранный язык", "География"],
+            electiveKeys: ["inf", "hist", "soc", "foreign", "geo"],
+            profession: "экономист",
+            description: "Экономисты АПК занимаются финансовым планированием, анализом бизнес-процессов, управлением инвестиционными проектами в сельском хозяйстве. Работают в банках, консалтинговых компаниях, на предприятиях АПК."
+        }
+    ];
+
+    // ------------------------------------------------------------
+    //  МИНИМАЛЬНЫЕ БАЛЛЫ ЕГЭ (согласно буклету)
+    // ------------------------------------------------------------
+    const MIN_SCORES = {
+        rus: 36,
+        math: 27,
+        bio: 36,
+        phys: 36,
+        chem: 36,
+        inf: 40,
+        soc: 42,
+        hist: 32,
+        foreign: 22,
+        geo: 37
+    };
+
+    // ------------------------------------------------------------
+    //  ЛОГИКА
+    // ------------------------------------------------------------
+    let entryType = 'ege';
+    let selectedSpecialtyId = null;
+    let lastSuitable = [];
+
+    function setEntryType(type) {
+        entryType = type;
+        document.getElementById('egeToggle').classList.toggle('active', type === 'ege');
+        document.getElementById('spoToggle').classList.toggle('active', type === 'spo');
+        const spoField = document.getElementById('spoField');
+        const egeGrid = document.getElementById('egeGrid');
+        const minScores = document.getElementById('minScoresInfo');
+        if (type === 'spo') {
+            spoField.style.display = 'block';
+            egeGrid.style.display = 'none';
+            minScores.style.display = 'none';
+        } else {
+            spoField.style.display = 'none';
+            egeGrid.style.display = 'grid';
+            minScores.style.display = 'flex';
+        }
+        document.getElementById('resultArea').classList.remove('show');
+        document.getElementById('robotContainer').classList.remove('show');
+        document.getElementById('specDetailContainer').classList.remove('show');
+        selectedSpecialtyId = null;
+    }
+
+    function getScores() {
+        return {
+            rus: parseInt(document.getElementById('rusScore').value) || 0,
+            math: parseInt(document.getElementById('mathScore').value) || 0,
+            bio: parseInt(document.getElementById('bioScore').value) || 0,
+            phys: parseInt(document.getElementById('physScore').value) || 0,
+            chem: parseInt(document.getElementById('chemScore').value) || 0,
+            inf: parseInt(document.getElementById('infScore').value) || 0,
+            soc: parseInt(document.getElementById('socScore').value) || 0,
+            geo: parseInt(document.getElementById('geoScore').value) || 0,
+            hist: parseInt(document.getElementById('histScore').value) || 0,
+            foreign: parseInt(document.getElementById('foreignScore').value) || 0
+        };
+    }
+
+    function checkProgramFit(prog, scores) {
+        // Проверяем обязательные предметы
+        for (let key of prog.examKeys) {
+            if ((scores[key] || 0) < MIN_SCORES[key]) return false;
+        }
+        // Проверяем предметы по выбору: хотя бы один должен быть >= минимума
+        for (let key of prog.electiveKeys) {
+            if ((scores[key] || 0) >= MIN_SCORES[key]) return true;
+        }
+        return false;
+    }
+
+    function findSuitable(scores) {
+        return programs.filter(p => checkProgramFit(p, scores));
+    }
+
+    function getProfessionMessage(suitable) {
+        if (suitable.length === 0) {
+            return { title: "😔 Пока не определено", message: "По вашим баллам не найдено подходящих направлений. Проверьте, что все обязательные предметы набрали минимум, и выбран хотя бы один предмет по выбору." };
+        }
+        const profCount = {};
+        suitable.forEach(p => {
+            const prof = p.profession || 'другое';
+            profCount[prof] = (profCount[prof] || 0) + 1;
+        });
+        let topProf = 'другое';
+        let maxCount = 0;
+        for (const [prof, count] of Object.entries(profCount)) {
+            if (count > maxCount) { maxCount = count; topProf = prof; }
+        }
+        const messages = {
+            'инженер': { title: '⚡ Вы — прирождённый инженер!', msg: 'Инженеры создают и совершенствуют технику, механизмы, системы автоматизации. Вы умеете находить нестандартные решения и воплощать идеи в реальность. В АГАТУ вас ждут современные лаборатории и практика на реальных производствах.' },
+            'экономист': { title: '📊 Вы — прирождённый экономист!', msg: 'Экономисты анализируют рынки, управляют финансами, планируют бизнес-процессы. Вы умеете видеть цифры и принимать взвешенные решения. В АГАТУ вы научитесь управлять агробизнесом и разрабатывать инвестиционные проекты.' },
+            'технолог': { title: '🧪 Вы — прирождённый технолог!', msg: 'Технологи создают продукты питания, контролируют качество, разрабатывают рецептуры. Вы умеете работать с сырьём и превращать его в готовый продукт. В АГАТУ вы освоите современные пищевые производства.' },
+            'биолог': { title: '🌿 Вы — прирождённый биолог!', msg: 'Биологи изучают живую природу, охраняют животных, управляют охотничьими хозяйствами. Вы умеете наблюдать, анализировать и заботиться об окружающей среде. В АГАТУ вас ждут экспедиции и работа с уникальными экосистемами Севера.' },
+            'ветеринар': { title: '🐾 Вы — прирождённый ветеринар!', msg: 'Ветеринары заботятся о здоровье животных, проводят экспертизу продуктов. Вы умеете сострадать и помогать. В АГАТУ вы получите практические навыки в клиниках и лабораториях.' },
+            'агроном': { title: '🌱 Вы — прирождённый агроном!', msg: 'Агрономы выращивают урожай, разрабатывают технологии, защищают растения. Вы умеете работать с землёй и видеть результат своего труда. В АГАТУ вы изучите современные методы земледелия и агробизнеса.' },
+            'эколог': { title: '🌍 Вы — прирождённый эколог!', msg: 'Экологи защищают природу, управляют водными и лесными ресурсами. Вы умеете заботиться о планете и видеть картину целиком. В АГАТУ вы научитесь рационально использовать природные богатства.' },
+            'архитектор': { title: '🏛️ Вы — прирождённый архитектор!', msg: 'Ландшафтные архитекторы создают парки, сады, городские пространства. Вы умеете сочетать красоту и функциональность. В АГАТУ вы освоите проектирование комфортной среды для жизни.' },
+            'зоотехник': { title: '🐄 Вы — прирождённый зоотехник!', msg: 'Зоотехники занимаются разведением и селекцией животных, кормлением и улучшением пород. Вы умеете работать с живыми организмами и заботиться о них. В АГАТУ вы освоите современные методы животноводства.' },
+            'другое': { title: '🧠 У вас широкий кругозор!', msg: 'Ваши результаты открывают множество возможностей. Вы можете выбрать из нескольких направлений — от инженерии до экономики. В АГАТУ вы найдёте профессию по душе!' }
+        };
+        return messages[topProf] || messages['другое'];
+    }
+
+    function showSpecialtyDetail(program) {
+        const container = document.getElementById('specDetailContainer');
+        const nameEl = document.getElementById('specDetailName');
+        const descEl = document.getElementById('specDetailDesc');
+        const placesEl = document.getElementById('specDetailPlaces');
+        if (program) {
+            nameEl.textContent = `${program.name} (${program.profile})`;
+            descEl.textContent = program.description;
+            placesEl.innerHTML = `
+                <span>🎓 Форма: ${program.form}</span>
+                <span>💰 Бюджет: ${program.budget}</span>
+                <span>💳 Платные: ${program.paid}</span>
+                <span>🎯 Целевые: ${program.target}</span>
+            `;
+            container.classList.add('show');
+        } else {
+            container.classList.remove('show');
+        }
+    }
+
+    window.selectSpecialty = function(id) {
+        selectedSpecialtyId = id;
+        document.querySelectorAll('.result-item').forEach(el => {
+            el.classList.toggle('selected', parseInt(el.dataset.id) === id);
+        });
+        const program = programs.find(p => p.id === id);
+        showSpecialtyDetail(program);
+    };
+
+    function renderResults(suitable) {
+        const area = document.getElementById('resultArea');
+        const list = document.getElementById('resultList');
+        const robotContainer = document.getElementById('robotContainer');
+        const robotTitle = document.getElementById('robotTitle');
+        const robotMessage = document.getElementById('robotMessage');
+        lastSuitable = suitable;
+
+        showSpecialtyDetail(null);
+
+        if (suitable.length === 0) {
+            list.innerHTML = '<div class="no-results">😔 По вашим баллам нет подходящих направлений. Проверьте, что все обязательные предметы набрали минимум, и выбран хотя бы один предмет по выбору.</div>';
+            robotContainer.classList.remove('show');
+        } else {
+            list.innerHTML = suitable.map(p => `
+                <div class="result-item" data-id="${p.id}" onclick="selectSpecialty(${p.id})">
+                    <div class="name">${p.name}</div>
+                    <div class="detail">📚 ${p.exams}</div>
+                    <div class="places-info">
+                        <span>🎓 ${p.form}</span>
+                        <span>💰 ${p.budget}</span>
+                        <span>🎯 ${p.target}</span>
+                        <span>💳 ${p.paid}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            const profInfo = getProfessionMessage(suitable);
+            robotTitle.textContent = profInfo.title;
+            robotMessage.innerHTML = `${profInfo.msg}<br><br><a href="https://agatu.ru/postupayushim/" target="_blank" class="robot-link">👉 Подробнее о специальностях на сайте АГАТУ</a>`;
+            robotContainer.classList.add('show');
+        }
+        area.classList.add('show');
+        selectedSpecialtyId = null;
+    }
+
+    function saveApplication(userName, userPhone, scores, suitable, selectedId, entryType, spoSpecialty) {
+        const selectedProgram = selectedId ? programs.find(p => p.id === selectedId) : null;
+        const record = {
+            date: new Date().toLocaleString('ru-RU'),
+            name: userName,
+            phone: userPhone,
+            entryType: entryType,
+            spoSpecialty: spoSpecialty || '',
+            scores: { ...scores },
+            suitablePrograms: suitable.map(p => p.name),
+            selectedProgram: selectedProgram ? selectedProgram.name : 'Не выбрана',
+            selectedProgramId: selectedId || null
+        };
+        let records = JSON.parse(localStorage.getItem('agatu_applications') || '[]');
+        records.push(record);
+        localStorage.setItem('agatu_applications', JSON.stringify(records));
+    }
+
+    document.getElementById('consentCheck').addEventListener('change', function() {
+        document.getElementById('calcBtn').disabled = !this.checked;
+    });
+
+    document.getElementById('calcBtn').addEventListener('click', function() {
+        const name = document.getElementById('userName').value.trim();
+        const phone = document.getElementById('userPhone').value.trim();
+        if (!name || !phone) {
+            alert('Пожалуйста, заполните ФИО и контактный телефон.');
+            return;
+        }
+        if (!document.getElementById('consentCheck').checked) {
+            alert('Необходимо дать согласие на обработку персональных данных.');
+            return;
+        }
+
+        let scores = {};
+        let suitable = [];
+        let spoSpecialty = '';
+
+        if (entryType === 'ege') {
+            scores = getScores();
+            suitable = findSuitable(scores);
+        } else {
+            spoSpecialty = document.getElementById('spoSpecialty').value.trim();
+            if (!spoSpecialty) {
+                alert('Пожалуйста, укажите специальность по диплому СПО.');
+                return;
+            }
+            suitable = programs;
+        }
+
+        renderResults(suitable);
+        saveApplication(name, phone, scores, suitable, selectedSpecialtyId, entryType, spoSpecialty);
+
+        const msg = document.getElementById('statusMsg');
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 5000);
+    });
+
+    // Инициализация
+    setEntryType('ege');
+</script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Администратор — заявки АГАТУ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f9fbf9;
+            color: #1e2f2b;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 32px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #e0ede6;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: #2c6e3c;
+            margin-bottom: 8px;
+        }
+        .sub {
+            color: #4a6b58;
+            margin-bottom: 24px;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .filter-bar input, .filter-bar select {
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid #cfe3d6;
+            font-size: 0.9rem;
+            background: white;
+            flex: 1 1 200px;
+        }
+        .filter-bar button {
+            background: #2c6e3c;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-bar button:hover {
+            background: #1f552d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 16px;
+        }
+        th {
+            background: #eef5f1;
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 2px solid #cfe3d6;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e0ede6;
+            vertical-align: top;
+        }
+        tr:hover {
+            background: #f4f9f6;
+        }
+        .badge {
+            background: #e0ede6;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #2c6e3c;
+            display: inline-block;
+            margin: 2px 4px 2px 0;
+        }
+        .badge-selected {
+            background: #ff9800;
+            color: white;
+        }
+        .badge-spo {
+            background: #2196f3;
+            color: white;
+        }
+        .badge-ege {
+            background: #4caf50;
+            color: white;
+        }
+        .empty-msg {
+            text-align: center;
+            padding: 40px;
+            color: #7a8f85;
+        }
+        .export-btn {
+            background: #1a6b8f;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 12px;
+        }
+        .export-btn:hover {
+            background: #0f4a6a;
+        }
+        .stats {
+            margin: 16px 0;
+            font-size: 0.9rem;
+            color: #4a6b58;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 16px; }
+            table { font-size: 0.75rem; }
+            th, td { padding: 6px 4px; }
+            .filter-bar { flex-direction: column; }
+            .filter-bar input, .filter-bar select { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔐 Администратор — заявки</h1>
+    <div class="sub">Все сохранённые заявки абитуриентов (данные из localStorage)</div>
+
+    <div id="authBlock" style="margin-bottom: 20px;">
+        <label for="adminPass" style="font-weight: 600;">Введите пароль администратора:</label>
+        <input type="password" id="adminPass" placeholder="Пароль" style="padding:10px 16px; border-radius:40px; border:1px solid #cfe3d6; width:200px; margin: 8px 0;">
+        <button id="authBtn" style="background:#2c6e3c; color:white; border:none; padding:10px 24px; border-radius:40px; font-weight:600; cursor:pointer;">Войти</button>
+        <div id="authError" style="color:#d32f2f; margin-top:8px; display:none;">Неверный пароль. Попробуйте ещё раз.</div>
+    </div>
+
+    <div id="adminContent" style="display:none;">
+        <div class="filter-bar">
+            <input type="text" id="filterName" placeholder="Фильтр по ФИО">
+            <input type="date" id="filterDate" placeholder="Дата">
+            <select id="filterType">
+                <option value="all">Все типы</option>
+                <option value="ege">ЕГЭ</option>
+                <option value="spo">СПО</option>
+            </select>
+            <button id="applyFilterBtn">Применить фильтр</button>
+            <button id="resetFilterBtn" style="background:#7a8f85;">Сбросить</button>
+            <button class="export-btn" id="exportCsvBtn">📥 Экспорт CSV</button>
+        </div>
+        <div class="stats" id="statsDisplay">Всего заявок: 0</div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>ФИО</th>
+                        <th>Телефон</th>
+                        <th>Тип</th>
+                        <th>Специальность СПО</th>
+                        <th>Баллы ЕГЭ</th>
+                        <th>Подходящие специальности</th>
+                        <th>Выбранная специальность</th>
+                    </tr>
+                </thead>
+                <tbody id="applicationsTableBody">
+                    <tr><td colspan="8" class="empty-msg">Нет заявок. Пользователи ещё не заполняли форму.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ADMIN_PASSWORD = 'admin2026ART';
+
+    document.getElementById('authBtn').addEventListener('click', function() {
+        const pass = document.getElementById('adminPass').value;
+        if (pass === ADMIN_PASSWORD) {
+            document.getElementById('authBlock').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            renderTable();
+        } else {
+            document.getElementById('authError').style.display = 'block';
+        }
+    });
+
+    document.getElementById('adminPass').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('authBtn').click();
+        }
+    });
+
+    function getRecords() {
+        try {
+            return JSON.parse(localStorage.getItem('agatu_applications') || '[]');
+        } catch {
+            return [];
+        }
+    }
+
+    function renderTable(filterName = '', filterDate = '', filterType = 'all') {
+        const tbody = document.getElementById('applicationsTableBody');
+        let records = getRecords();
+
+        if (filterName) {
+            records = records.filter(r => r.name && r.name.toLowerCase().includes(filterName.toLowerCase()));
+        }
+        if (filterDate) {
+            records = records.filter(r => r.date && r.date.startsWith(filterDate));
+        }
+        if (filterType !== 'all') {
+            records = records.filter(r => (r.entryType || 'ege') === filterType);
+        }
+
+        document.getElementById('statsDisplay').textContent = `Всего заявок: ${records.length}`;
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">Нет заявок, удовлетворяющих фильтру.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = records.map(r => {
+            const scores = r.scores || {};
+            const scoreStr = Object.entries(scores)
+                .filter(([k, v]) => v > 0)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(', ') || '—';
+
+            const suitableList = (r.suitablePrograms || []).map(s => `<span class="badge">${s}</span>`).join(' ');
+            const selected = r.selectedProgram || 'Не выбрана';
+            const selectedBadge = selected !== 'Не выбрана' ? `<span class="badge badge-selected">${selected}</span>` : 'Не выбрана';
+            const entryType = r.entryType || 'ege';
+            const typeBadge = entryType === 'spo' ? '<span class="badge badge-spo">СПО</span>' : '<span class="badge badge-ege">ЕГЭ</span>';
+            const spoSpecialty = r.spoSpecialty || '—';
+
+            return `<tr>
+                <td>${r.date || '—'}</td>
+                <td><strong>${r.name || '—'}</strong></td>
+                <td>${r.phone || '—'}</td>
+                <td>${typeBadge}</td>
+                <td>${spoSpecialty}</td>
+                <td style="font-size:0.75rem;">${scoreStr}</td>
+                <td>${suitableList}</td>
+                <td>${selectedBadge}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    document.getElementById('applyFilterBtn').addEventListener('click', function() {
+        const name = document.getElementById('filterName').value;
+        const date = document.getElementById('filterDate').value;
+        const type = document.getElementById('filterType').value;
+        renderTable(name, date, type);
+    });
+
+    document.getElementById('resetFilterBtn').addEventListener('click', function() {
+        document.getElementById('filterName').value = '';
+        document.getElementById('filterDate').value = '';
+        document.getElementById('filterType').value = 'all';
+        renderTable();
+    });
+
+    document.getElementById('exportCsvBtn').addEventListener('click', function() {
+        const records = getRecords();
+        if (records.length === 0) {
+            alert('Нет данных для экспорта.');
+            return;
+        }
+        let csv = 'Дата,ФИО,Телефон,Тип,Специальность СПО,Баллы ЕГЭ,Подходящие специальности,Выбранная специальность\n';
+        records.forEach(r => {
+            const scores = r.scores || {};
+            const scoreStr = Object.entries(scores)
+                .filter(([k, v]) => v > 0)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join('; ');
+            const suitableStr = (r.suitablePrograms || []).join('; ');
+            const selectedStr = r.selectedProgram || 'Не выбрана';
+            const entryType = r.entryType || 'ege';
+            const spoSpecialty = r.spoSpecialty || '';
+            csv += `"${r.date || ''}","${r.name || ''}","${r.phone || ''}","${entryType}","${spoSpecialty}","${scoreStr}","${suitableStr}","${selectedStr}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'agatu_applications.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    });
+</script>
+</body>
+</html>
